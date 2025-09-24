@@ -9,7 +9,12 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS,
+  methods: ["GET", "POST"],
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 
 // Nodemailer transporter setup
@@ -35,7 +40,7 @@ app.get("/", (req, res) => {
   res.send("Contact form API is running!");
 });
 
-app.post("/contact", async (req, res) => {
+app.post("/connect", async (req, res) => {
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
