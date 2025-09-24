@@ -8,14 +8,21 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+const allowedOrigins = process.env.CORS.split(",");
+
 app.use(cors({
-  origin: process.env.CORS,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST"],
   credentials: true
 }));
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
