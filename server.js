@@ -16,7 +16,7 @@ const allowedOrigins = process.env.CORS.split(",").map(o => o.trim());
 // ✅ Middleware: sanitize request body fields
 app.use(sanitize({
   sanitize: {
-    body: ["name", "email", "message"]
+    body: ["name", "email", "message", "phone"]
   }
 }));
 
@@ -70,9 +70,15 @@ app.post(
   apiLimiter,
   [
     // ✅ Validation rules
-    check("name").trim().notEmpty().withMessage("Name is required."),
-    check("email").isEmail().normalizeEmail().withMessage("A valid email is required."),
-    check("message").trim().notEmpty().withMessage("Message is required."),
+    check("name").trim().notEmpty().withMessage("Please enter your name."),
+    check("email").isEmail().normalizeEmail().withMessage("Please enter a valid email."),
+    check("phone")
+      .trim()
+      .notEmpty()
+      .withMessage("Please enter your mobile number.")
+      .matches(/^\+?\d{10,15}$/)
+      .withMessage("Please enter a valid phone number."),
+    check("message").trim().notEmpty().withMessage("Please enter your message.")
   ],
   async (req, res) => {
     // ✅ Handle validation errors
@@ -81,7 +87,7 @@ app.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, message } = req.body;
+    const { name, email, message, phone } = req.body;
 
     const mailOptions = {
       from: `"${name}" <${process.env.EMAIL_USER}>`,
@@ -89,8 +95,9 @@ app.post(
       to: process.env.EMAIL_TO,
       subject: `New Contact Form Submission from ${name}`,
       html: `
-        <p><strong>Name:</strong> ${name}</p>
+        <h1><strong>Name:</strong> ${name}</h1>
         <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
         <p><strong>Message:</strong> ${message}</p>
       `,
     };
